@@ -309,6 +309,75 @@ class ParseItem(object):
         """
         raise MatchError("invalid use of ParseItem (programming error)")
 
+    def match_json(self, json_items, fields=None, trace=None, context=None):
+	"""Called during the match process on JSON input.
+
+	The same cmdparser setup can be used as an interactive shell and to
+	process commands passed in through JSON.  When these need to be
+	processed, the call :meth:`onecmd_json()` with a JSON-string or a structure
+	parsed into a dictionary from JSON.  The anticipated use is as an
+	interconnect between microservices, where the shell mode supports
+	administrative use and the JSON mode allows connected services to
+	perform similar actions.
+
+	The structure expected in JSON holds a ``do_`` name with a
+	list of tokens found in their respective literal positions,
+	and for each named variable an element holding its value.
+	Values with a single entry are short-hands for a list with
+	one entry.
+
+	An exampe JSON structure would be
+
+	    { "do_": ["set", "age"],
+	      "name": "Andrew",
+	      "number": "98" }
+
+        which, upon matching with a syntax like
+
+	    set <name> ( age <number> | nicknames <nick> [...] )
+
+	would result in arguments
+
+	    ["set", "Andrew", "age", "98"]
+
+	and fields
+
+	    { 'set':['set'], '<name>':['Andrew'],
+	      'age':['age'], '<number>':['98'] }
+
+	and the latter two are used to call the shell function, just like it
+	would have been done for a shell call.  **TODO:** Future extensions
+	to provide input on stdin, and to tap stdout and stderr.
+
+        This method attempts to match item's specification against tokens
+        and arguments in ``json_items`` and either return the remains
+        of ``json_items`` with consumed items removed, or raise
+        :class:`MatchError` if the command-line doesn't match.
+
+        If the item has consumed a token or argument, it should store this
+        against the item's name in the ``fields`` dict if that parameter is
+        not ``None``.  In addition, it should add or expand an entry with
+	the empty string as its key in ``fields``, whose contents is a list of
+	words as they would otherwise be taken from the command line.
+
+	Command line completion is not facilitated by this method.  It is
+	only meaningful for the interactive shell.
+
+        The ``trace`` parameter, if supplied, should be a ``list``. As each
+        class's ``match()`` function is entered or left, a string representing
+        it is appended to the list. This is for debugging purposes.
+
+        The ``context`` parameter is reflected down through all calls to
+        ``match()`` methods so application-provided tokens can use it. For
+        example, the :mod:`cmd` integration passes the :class:`cmd.Cmd`
+        instance as the context.
+
+        The default is to raise a :class:`MatchError`, derived classes should
+        override this behaviour.
+        """
+        raise MatchError("invalid use of ParseItem (programming error)")
+
+
 
     def check_match(self, items, fields=None, trace=None, context=None):
         """Return None if the specified command-line is valid and complete.
@@ -724,6 +793,28 @@ class Token(ParseItem):
         tracer.fail(compare_items)
         raise MatchError("%r doesn't match %r" % (arg, str(self)))
 
+
+    def match_json(self, json_items, fields=None, trace=None, context=None):
+	"""See :meth:`ParseItem.match_json()`."""
+
+	tracer = CallTracer(trace, self, json_items)
+	try:
+	    do_this = json_items ['do_']
+	except:
+	    tracer.fail([])
+	    raise MatchError("invalid \"do_\" element in JSON for %s" % (str(self),))
+	arg = do_this[0]
+	for value in self.get_values(context):
+	    if arg == vale:
+		if fields is not None:
+		    arg_list = fields.setdefault(str(self), [])
+		    arg_list.extend(self.convert(arg, context))
+		json_new = json_items.copy()
+		json_new ['do_'] = do_this[1:]
+		json_new [''] = json_new.get('',[]) + [arg]
+		return json_new
+	tracer.fail(json_items)
+	raise MatchError("%s doesn't match %d" % (arg, str(self)))
 
 
 class AnyToken(ParseItem):
