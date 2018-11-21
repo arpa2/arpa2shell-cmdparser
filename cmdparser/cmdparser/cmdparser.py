@@ -193,6 +193,21 @@ A simple example of these decorators is shown below::
        interpreter = Handler()
        interpreter.cmdloop("Welcome to the test handler")
 
+The ``CmdMethodDecorator`` adds a further refinement, which is a flag
+defaulting to ``json=False`` which, when set to ``True``, causes the
+interpretation of the line as a JSON structure (not a string but a
+dictionary).  The ``CmdClassDecorator`` uses this in offering an extra
+method ``onecmd_json()`` that takes JSON in string form or as a
+structure, and treats it like a command to be run by the same shell.
+In the JSON structure is a ``do_`` parameter with the literal tokens
+to use, along with names such as ``num`` for bindings by variables
+like ``<num>`` in the syntax.
+
+The intention of this refinement is to have the nice interactive use
+of a shell, and provide the exact same functionality over an additional
+JSON interface that might be used for automation purposes, for instance
+as a microshell.
+
 
 See the docstrings of these decorators for more information on their use.
 """
