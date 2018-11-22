@@ -1359,16 +1359,15 @@ def onecmd_json_method (self, jin):
     jout = json.loads ('{}')
     try:
         mth = getattr (self, 'do_' + tokenlist[0])
-        jout = mth (jin, json=True)
+        mth (jin, json=True)
     except Exception as e:
         sys.stderr.write ('Exception: %s' % (str(e),))
     finally:
         outstr = sys.stdout.getvalue ()
         errstr = sys.stderr.getvalue ()
         (sys.stdin, sys.stdout, sys.stderr) = savedio
-    if not jout.has_key('stdout_'):
-        jout['stdout_'] = outstr
-    if not jout.has_key('stderr_') and errstr != '':
+    jout['stdout_'] = outstr
+    if errstr != '':
         jout['stderr_'] = errstr
     if isstr:
         jout = json.dumps (jout)
