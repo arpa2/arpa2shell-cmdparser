@@ -215,6 +215,10 @@ See the docstrings of these decorators for more information on their use.
 
 import itertools
 import shlex
+import json
+
+# Note: cStringIO is faster, but ASCII-only
+from StringIO import StringIO
 
 
 class ParseError(Exception):
@@ -362,8 +366,10 @@ class ParseItem(object):
               'age':['age'], '<number>':['98'] }
 
         and the latter two are used to call the shell function, just like it
-        would have been done for a shell call.  **TODO:** Future extensions
-        to provide input on stdin, and to tap stdout and stderr.
+        would have been done for a shell call.  The command is not called
+        interactively, so it is possible to supply "stdin_" with a string
+        to input and similarly "stdout_" and, if not empty, "stderr_" will
+        be set to the respective single-command outputs.
 
         This method attempts to match item's specification against tokens
         and arguments in ``json_items`` and either return the remains
@@ -1331,7 +1337,11 @@ def onecmd_json_method (self, jin):
     isstr = ( type(jin) in [type(''),type(u'')] )
     if isstr:
         jin = json.loads (jin)
-    #TODO# String values in jin should be lists of strings
+    if jin.has_key ('stdin_'):
+        instr = jin.get('stdin_', '')
+        del jin['stdin_']
+    else:
+        instr = ''
     tokenlist = jin['do_']
     if type(tokenlist) in [type(''),type(u'')]:
         tokenlist = shlex.split(tokenlist)
@@ -1339,11 +1349,24 @@ def onecmd_json_method (self, jin):
     for (k,v) in jin.items():
         if type(v) in [type(''),type(u'')]:
             jin[k] = [v]
-    #TODO# Also collect 'stdin_' if provided
-    mth = getattr (self, 'do_' + tokenlist[0])
-    #SEEMINGLY_NOT# jin['do_'] = tokenlist[1:]
-    #TODO# Capture jout from stdout/stderr
-    jout = mth (jin, json=True)
+    savedio = (sys.stdin, sys.stdout, sys.stderr)
+    sys.stdin  = StringIO (instr)
+    sys.stdout = StringIO ()
+    sys.stderr = StringIO ()
+    jout = json.loads ('{}')
+    try:
+        mth = getattr (self, 'do_' + tokenlist[0])
+        jout = mth (jin, json=True)
+    except Exception as e:
+        sys.stderr.write ('Exception: %s' % (str(e),))
+    finally:
+        outstr = sys.stdout.getvalue ()
+        errstr = sys.stderr.getvalue ()
+        (sys.stdin, sys.stdout, sys.stderr) = savedio
+    if not jout.has_key('stdout_'):
+        jout['stdout_'] = outstr
+    if not jout.has_key('stderr_') and errstr != '':
+        jout['stderr_'] = errstr
     if isstr:
         jout = json.dumps (jout)
     return jout
