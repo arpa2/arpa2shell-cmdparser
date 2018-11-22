@@ -1,4 +1,4 @@
-"""A simple command parsing library.
+"""Command parsing library with automation-friendly JSON access.
 
 This module allows textual command specifications to be "compiled" into parse
 tree structures which can then be used to parse command strings entered by a
@@ -326,44 +326,44 @@ class ParseItem(object):
 
 
     def match_json(self, json_items, args=None, fields=None, trace=None, context=None):
-	"""Called during the match process on JSON input.
+        """Called during the match process on JSON input.
 
-	The same cmdparser setup can be used as an interactive shell and to
-	process commands passed in through JSON.  When these need to be
-	processed, the call :meth:`onecmd_json()` with a JSON-string or a structure
-	parsed into a dictionary from JSON.  The anticipated use is as an
-	interconnect between microservices, where the shell mode supports
-	administrative use and the JSON mode allows connected services to
-	perform similar actions.
+        The same cmdparser setup can be used as an interactive shell and to
+        process commands passed in through JSON.  When these need to be
+        processed, the call :meth:`onecmd_json()` with a JSON-string or a structure
+        parsed into a dictionary from JSON.  The anticipated use is as an
+        interconnect between microservices, where the shell mode supports
+        administrative use and the JSON mode allows connected services to
+        perform similar actions.
 
-	The structure expected in JSON holds a ``do_`` name with a
-	list of tokens found in their respective literal positions,
-	and for each named variable an element holding its value.
-	Values with a single entry are short-hands for a list with
-	one entry.
+        The structure expected in JSON holds a ``do_`` name with a
+        list of tokens found in their respective literal positions,
+        and for each named variable an element holding its value.
+        Values with a single entry are short-hands for a list with
+        one entry.
 
-	An exampe JSON structure would be
+        An exampe JSON structure would be
 
-	    { "do_": ["set", "age"],
-	      "name": "Andrew",
-	      "number": "98" }
+            { "do_": ["set", "age"],
+              "name": "Andrew",
+              "number": "98" }
 
-	which, upon matching with a syntax like
+        which, upon matching with a syntax like
 
-	    set <name> ( age <number> | nicknames <nick> [...] )
+            set <name> ( age <number> | nicknames <nick> [...] )
 
-	would result in arguments
+        would result in arguments
 
-	    ["set", "Andrew", "age", "98"]
+            ["set", "Andrew", "age", "98"]
 
-	and fields
+        and fields
 
-	    { 'set':['set'], '<name>':['Andrew'],
-	      'age':['age'], '<number>':['98'] }
+            { 'set':['set'], '<name>':['Andrew'],
+              'age':['age'], '<number>':['98'] }
 
-	and the latter two are used to call the shell function, just like it
-	would have been done for a shell call.  **TODO:** Future extensions
-	to provide input on stdin, and to tap stdout and stderr.
+        and the latter two are used to call the shell function, just like it
+        would have been done for a shell call.  **TODO:** Future extensions
+        to provide input on stdin, and to tap stdout and stderr.
 
         This method attempts to match item's specification against tokens
         and arguments in ``json_items`` and either return the remains
@@ -372,12 +372,12 @@ class ParseItem(object):
 
         If the item has consumed a token or argument, it should store this
         against the item's name, possibly in angular brackets, in the
-	``fields`` dict if that parameter is not ``None``.  In addition,
-	it should append the consumed word to the ``args`` list if that
-	parameter is not ``None``.
+        ``fields`` dict if that parameter is not ``None``.  In addition,
+        it should append the consumed word to the ``args`` list if that
+        parameter is not ``None``.
 
-	Command line completion is not facilitated by this method, as it is
-	only meaningful for the interactive shell.
+        Command line completion is not facilitated by this method, as it is
+        only meaningful for the interactive shell.
 
         The ``trace`` parameter, if supplied, should be a ``list``. As each
         class's ``match()`` function is entered or left, a string representing
@@ -430,41 +430,41 @@ class ParseItem(object):
 
 
     def check_match_json(self, jin, args=None, fields=None, trace=None, context=None):
-	"""Return none if the specified JSON-in data is valid and complete.
+        """Return none if the specified JSON-in data is valid and complete.
 
-	If the JSON input doesn't match, an appropriate error explaining
-	the lack of match is returned.
+        If the JSON input doesn't match, an appropriate error explaining
+        the lack of match is returned.
 
-	Calling code should typitically use this instead of calling
-	:meth:`match()` directly. Derived classes shouldn't typically override
-	this method.
+        Calling code should typitically use this instead of calling
+        :meth:`match()` directly. Derived classes shouldn't typically override
+        this method.
 
-	The ``args`` parameter should be ``None`` or a list - if specified,
-	words taken from the JSON input will be stored when they match the
-	syntax, in the order determined by the syntax.
+        The ``args`` parameter should be ``None`` or a list - if specified,
+        words taken from the JSON input will be stored when they match the
+        syntax, in the order determined by the syntax.
 
-	The ``fields`` parameter should be ``None`` or a dictionary - if
-	specified, parsed items will be stored in the dictionary under their
-	command specifiers.
+        The ``fields`` parameter should be ``None`` or a dictionary - if
+        specified, parsed items will be stored in the dictionary under their
+        command specifiers.
 
-	The ``trace`` field should be ``None`` or a list - if specified,
-	function entries and exits and parse failures are traced by appending
-	appropriate strings to the list. This is only of use for debugging
-	issues in the parsing code itself.
+        The ``trace`` field should be ``None`` or a list - if specified,
+        function entries and exits and parse failures are traced by appending
+        appropriate strings to the list. This is only of use for debugging
+        issues in the parsing code itself.
 
-	The ``context`` paramater is passed into various methods of the
-	parse tree instances, which may be useful for derived classes.
-	"""
-	try:
-	    unparsed = self.match_json(jin, args=args, fields=fields,
-				       trace=trace, context=context)
-	    unparsed = [ k for (k,v) in unparsed.items() if len(v)>0 ]
-	    if len(unparsed) == 0:
-		return None
-	    else:
-		return "Unprocessed entries left in %r" % (unparsed,)
-	except MatchError as e:
-	    return str(e)
+        The ``context`` paramater is passed into various methods of the
+        parse tree instances, which may be useful for derived classes.
+        """
+        try:
+            unparsed = self.match_json(jin, args=args, fields=fields,
+                                       trace=trace, context=context)
+            unparsed = [ k for (k,v) in unparsed.items() if len(v)>0 ]
+            if len(unparsed) == 0:
+                return None
+            else:
+                return "Unprocessed entries left in %r" % (unparsed,)
+        except MatchError as e:
+            return str(e)
 
 
     def get_completions(self, items, context=None):
@@ -544,14 +544,14 @@ class Sequence(ParseItem):
 
 
     def match_json(self, json_items, args=None, fields=None, trace=None,
-		   context=None):
-	"""See :meth:`ParseItem.match_json()`."""
+                   context=None):
+        """See :meth:`ParseItem.match_json()`."""
 
-	tracer = CallTracer(trace, self, json_items)
-	for item in self.items:
-	   json_items = item.match(json_items, args=args, fields=fields,
-				   trace=trace, context=context)
-	return json_items
+        tracer = CallTracer(trace, self, json_items)
+        for item in self.items:
+           json_items = item.match_json(json_items, args=args, fields=fields,
+                                        trace=trace, context=context)
+        return json_items
 
 
 class Repeater(ParseItem):
@@ -603,24 +603,24 @@ class Repeater(ParseItem):
 
 
     def match_json(self, json_items, args=None, fields=None,
-		   trace=None, context=None):
-	"""See :meth:`ParseItem.match()`."""
+                   trace=None, context=None):
+        """See :meth:`ParseItem.match()`."""
 
-	tracer = CallTracer(trace, self, json_items)
-	repeats = 0
-	while True:
-	    try:
-		new_items = self.item.match_json(json_items, args=args,
-					         fields=fields,
-					         trace=trace,
-						 context=context)
-		json_items = new_items
-		repeats += 1
-	    except MatchError as e:
-		if repeats == 0:
-		    tracer.fail(e.args[0])
-		    raise
-		return json_items
+        tracer = CallTracer(trace, self, json_items)
+        repeats = 0
+        while True:
+            try:
+                new_items = self.item.match_json(json_items, args=args,
+                                                 fields=fields,
+                                                 trace=trace,
+                                                 context=context)
+                json_items = new_items
+                repeats += 1
+            except MatchError as e:
+                if repeats == 0:
+                    tracer.fail(e.args[0])
+                    raise
+                return json_items
 
 
 
@@ -706,22 +706,22 @@ class Subtree(ParseItem):
 
 
     def match_json(self, json_items, args=None, fields=None,
-		   trace=None, context=None):
-	"""See :meth:`ParseItem.match()`."""
+                   trace=None, context=None):
+        """See :meth:`ParseItem.match()`."""
 
-	tracer = CallTracer(trace, self, json_items)
-	subtree_args   = []
-	subtree_fields = {}
-	new_items = self.parse_tree.match_json(json_items, args=subtree_args,
-					       fields=subtree_fields,
-					       trace=trace, context=context)
-	if args is not None:
-	    args.extend(subtree_args)
-	if fields is not None:
-	    field_value = fields.setdefault(str(self), [])
-	    field_value.extend(self.convert(subtree_args, subtree_fields,
-			       context))
-	return new_items
+        tracer = CallTracer(trace, self, json_items)
+        subtree_args   = []
+        subtree_fields = {}
+        new_items = self.parse_tree.match_json(json_items, args=subtree_args,
+                                               fields=subtree_fields,
+                                               trace=trace, context=context)
+        if args is not None:
+            args.extend(subtree_args)
+        if fields is not None:
+            field_value = fields.setdefault(str(self), [])
+            field_value.extend(self.convert(subtree_args, subtree_fields,
+                               context))
+        return new_items
 
 
 
@@ -805,24 +805,24 @@ class Alternation(ParseItem):
 
 
     def match_json(self, json_items, args=None, fields=None,
-		   trace=None, context=None):
-	"""See :meth:`ParseItem.match()`."""
+                   trace=None, context=None):
+        """See :meth:`ParseItem.match()`."""
 
-	tracer = CallTracer(trace, self, json_items)
-	errors = set()
-	for option in self.options:
-	    try:
-		return option.match_json(json_items, args=args,
-					 fields=fields,
-					 trace=trace,
-					 context=context)
-	    except MatchError as e:
-		errors.add(str(e))
-	    if self.optional:
-		return json_items
-	    else:
-		tracer.fail(json_items)
-		raise MatchError(" and ".join(errors))
+        tracer = CallTracer(trace, self, json_items)
+        errors = set()
+        for option in self.options:
+            try:
+                return option.match_json(json_items, args=args,
+                                         fields=fields,
+                                         trace=trace,
+                                         context=context)
+            except MatchError as e:
+                errors.add(str(e))
+        if self.optional:
+            return json_items
+        else:
+            tracer.fail(json_items)
+            raise MatchError(" and ".join(errors))
 
 
 
@@ -919,29 +919,28 @@ class Token(ParseItem):
 
 
     def match_json(self, json_items, args=None, fields=None,
-		   trace=None, context=None):
-	"""See :meth:`ParseItem.match_json()`."""
+                   trace=None, context=None):
+        """See :meth:`ParseItem.match_json()`."""
 
-	tracer = CallTracer(trace, self, json_items)
-	try:
-	    tokenlist = json_items ['do_']
-	except:
-	    tracer.fail([])
-	    raise MatchError("invalid \"do_\" element in JSON for %s" % (str(self),))
-	arg = tokenlist[0]
-	for value in self.get_values(context):
-	    if arg == vale:
-		args.append(arg)
-		if args is not None:
-		    args.append(arg)
-		if fields is not None:
-		    arg_list = fields.setdefault(str(self), [])
-		    arg_list.extend(self.convert(arg, context))
-		json_new = json_items.copy()
-		json_new ['do_'] = tokenlist[1:]
-		return json_new
-	tracer.fail(json_items)
-	raise MatchError("%s doesn't match %d" % (arg, str(self)))
+        tracer = CallTracer(trace, self, json_items)
+        try:
+            tokenlist = json_items ['do_']
+            arg = tokenlist[0]
+        except:
+            tracer.fail([])
+            raise MatchError("invalid \"do_\" element in JSON for %s" % (str(self),))
+        for value in self.get_values(context):
+            if arg == value:
+                if args is not None:
+                    args.append(arg)
+                if fields is not None:
+                    arg_list = fields.setdefault(str(self), [])
+                    arg_list.extend(self.convert(arg, context))
+                json_new = json_items.copy()
+                json_new ['do_'] = tokenlist[1:]
+                return json_new
+        tracer.fail(json_items)
+        raise MatchError("%s doesn't match %s" % (arg, str(self)))
 
 
 
@@ -1011,25 +1010,28 @@ class AnyToken(ParseItem):
 
 
     def match_json(self, json_items, args=None, fields=None,
-		   trace=None, context=None):
-	"""See :meth:`ParseItem.match_json()`."""
+                   trace=None, context=None):
+        """See :meth:`ParseItem.match_json()`."""
 
-	tracer = CallTracer(trace, self, json_items)
-	try:
-	    wordlist = json_items [self.name]
-	except:
-	    tracer.fail([])
-	    raise MatchError("no variable named \"%s\" in JSON input" % (self.name,))
-	arg = wordlist[0]
-	if not self.validate(arg, context):
-	    raise Matcherror("%r is not a valid %s" % (arg, str(self)))
-	if args is not None:
-	    args.append(arg)
-	if fields is not None:
-	    fields.setdefault(str(self), []).extend(self.convert(arg, context))
-	json_new = json_items.copy()
-	json_new [self.name] = wordlist[1:]
-	return json_new
+        tracer = CallTracer(trace, self, json_items)
+        try:
+            wordlist = json_items [self.name]
+        except:
+            tracer.fail([])
+            raise MatchError("insufficient input for %s" % (str(self),))
+        arg = wordlist[0]
+        if not self.validate(arg, context):
+            raise Matcherror("%r is not a valid %s" % (arg, str(self)))
+        if args is not None:
+            args.append(arg)
+        if fields is not None:
+            fields.setdefault(str(self), []).extend(self.convert(arg, context))
+        json_new = json_items.copy()
+        if len(wordlist) <= 1:
+            del json_new[self.name]
+        else:
+            json_new[self.name] = wordlist[1:]
+        return json_new
 
 
 class IntegerToken(AnyToken):
@@ -1158,27 +1160,27 @@ class AnyTokenString(ParseItem):
 
 
     def match_json(self, json_items, args=None, fields=None,
-		   trace=None, context=None):
-	"""See :meth:`ParseItem.match()`."""
-	tracer = CallTracer(trace, self, json_items)
-	try:
-	    tokenlist = json_items ['do_']
-	except:
-	    tracer.fail([])
-	    raise MatchError("invalid \"do_\" element in JSON for %s" % (str(self),))
-	if not self.validate(tokenlist, context):
-	    tokens = " ".join(tokenlist)
-	    tokens = args[:20] + "[...]" if len(tokens) > 25 else tokens
-	    tracer.fail([])
-	    raise MatchError("%r is not a valid %s" % (args, str(self)))
-	if args is not None:
-	    args.extend(tokenlist)
-	if fields is not None:
-	    arg_list = fields.setdefault(str(self), [])
-	    arg_list.extend(self.convert(tokenlist, context))
-	# We may still want to check if other variables are emptied
-	json_items ['do_'] = []
-	return json_items
+                   trace=None, context=None):
+        """See :meth:`ParseItem.match()`."""
+        tracer = CallTracer(trace, self, json_items)
+        try:
+            tokenlist = json_items ['do_']
+        except:
+            tracer.fail([])
+            raise MatchError("invalid \"do_\" element in JSON for %s" % (str(self),))
+        if not self.validate(tokenlist, context):
+            tokens = " ".join(tokenlist)
+            tokens = args[:20] + "[...]" if len(tokens) > 25 else tokens
+            tracer.fail([])
+            raise MatchError("%r is not a valid %s" % (args, str(self)))
+        if args is not None:
+            args.extend(tokenlist)
+        if fields is not None:
+            arg_list = fields.setdefault(str(self), [])
+            arg_list.extend(self.convert(tokenlist, context))
+        # We may still want to check if other variables are emptied
+        json_items ['do_'] = []
+        return json_items
 
 
 def parse_spec(spec, ident_factory=None):
@@ -1326,21 +1328,24 @@ def onecmd_json_method (self, jin):
     argument as a JSON-derived structure instead of a command line.
     """
 
-    isstr = ( type(jin) == type('') )
+    isstr = ( type(jin) in [type(''),type(u'')] )
     if isstr:
-	jin = json.loads (jin)
+        jin = json.loads (jin)
     #TODO# String values in jin should be lists of strings
     tokenlist = jin['do_']
+    if type(tokenlist) in [type(''),type(u'')]:
+        tokenlist = shlex.split(tokenlist)
+        jin['do_'] = tokenlist
+    for (k,v) in jin.items():
+        if type(v) in [type(''),type(u'')]:
+            jin[k] = [v]
     #TODO# Also collect 'stdin_' if provided
-    if type(tokenlist) == type(''):
-	tokenlist = shlex.split(tokenlist)
     mth = getattr (self, 'do_' + tokenlist[0])
-    jin['do_'] = tokenlist[1:]
+    #SEEMINGLY_NOT# jin['do_'] = tokenlist[1:]
     #TODO# Capture jout from stdout/stderr
     jout = mth (jin, json=True)
-    mth (tokenlist, args, fields)
     if isstr:
-	jout = json.dumps (jout)
+        jout = json.dumps (jout)
     return jout
 
 
@@ -1365,7 +1370,7 @@ class CmdClassDecorator(object):
                 #       to a so that each completer gets its own closure.
                 method_dec.add_completer(cls)
 
-	cls.onecmd_json = onecmd_json_method
+        cls.onecmd_json = onecmd_json_method
 
         return cls
 
@@ -1408,18 +1413,23 @@ class CmdMethodDecorator(object):
         # Build replacement method.  The extra json option can switch to JSON input.
         def wrapper(cmd_self, argsin, json=False):
 
-	    if json:
-		fields = {}
-		argsout = []
-		check = self.parse_tree.check_match_json(argsin,
-							 args=split_args,
-							 fields=fields,
-							 context=cmd_self)
-	    else:
+            if json:
+                # We were called with a JSON structure in argsin
+                split_args = []
+                fields = {}
+                check = self.parse_tree.check_match_json(argsin,
+                                                         args=split_args,
+                                                         fields=fields,
+                                                         context=cmd_self)
+
+            else:
+                # We were called with a commandline string in argsin
                 split_args = [self.command_string] + shlex.split(argsin)
                 fields = {}
                 check = self.parse_tree.check_match(split_args, fields=fields,
                                                     context=cmd_self)
+
+            # Only process the command if check_match[_json] approves
             if check is None:
                 return method(cmd_self, split_args, fields)
             else:
