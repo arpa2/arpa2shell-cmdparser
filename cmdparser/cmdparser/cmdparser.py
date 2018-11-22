@@ -215,10 +215,6 @@ See the docstrings of these decorators for more information on their use.
 
 import itertools
 import shlex
-import json
-
-# Note: cStringIO is faster, but ASCII-only
-from StringIO import StringIO
 
 
 class ParseError(Exception):
@@ -1333,6 +1329,10 @@ def onecmd_json_method (self, jin):
     parameter ``json=True`` to order interpretation of the first
     argument as a JSON-derived structure instead of a command line.
     """
+
+    import json
+    # Note: cStringIO is faster, but ASCII-only
+    from StringIO import StringIO
 
     isstr = ( type(jin) in [type(''),type(u'')] )
     if isstr:
