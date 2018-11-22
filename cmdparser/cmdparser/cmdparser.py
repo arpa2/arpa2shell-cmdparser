@@ -1330,7 +1330,10 @@ def onecmd_json_method (self, jin):
     argument as a JSON-derived structure instead of a command line.
     """
 
+    # This method will be run in a foreign context, so import dependencies
+    import sys
     import json
+    import shlex
     # Note: cStringIO is faster, but ASCII-only
     from StringIO import StringIO
 
