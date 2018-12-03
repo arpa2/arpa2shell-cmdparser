@@ -1333,7 +1333,6 @@ def onecmd_json_method (self, jin):
     # This method will be run in a foreign context, so import dependencies
     import sys
     import json
-    import shlex
     # Note: cStringIO is faster, but ASCII-only
     from StringIO import StringIO
 
@@ -1347,7 +1346,7 @@ def onecmd_json_method (self, jin):
         instr = ''
     tokenlist = jin['do_']
     if type(tokenlist) in [type(''),type(u'')]:
-        tokenlist = shlex.split(tokenlist)
+        tokenlist = tokenlist.split ()
         jin['do_'] = tokenlist
     for (k,v) in jin.items():
         if type(v) in [type(''),type(u'')]:
